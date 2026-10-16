@@ -2,6 +2,10 @@
 
 A small app built with plain HTML, CSS, and JavaScript. No bundler or third-party libraries are required.
 
+## Live demo
+
+[Open Frame — Movie Search](https://moviesearchapp-mauve.vercel.app/)
+
 ## Data sources
 
 - TMDB provides the trending feed, movie and TV catalogs, title search, posters, and details. Requests use the `en-US` locale.
