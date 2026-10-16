@@ -45,6 +45,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
         onFavorite,
         isFavorite,
         onActor: showPersonDetails,
+        onTitle: (title) => showDetails(title),
       });
     } catch (error) {
       if (isCurrentRequest(requestId)) {
@@ -124,6 +125,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
       onFavorite,
       isFavorite,
       onActor: showPersonDetails,
+      onTitle: (title) => showDetails(title),
     });
   }
 

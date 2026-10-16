@@ -67,6 +67,7 @@
     grid-template-columns: minmax(140px, 220px) 1fr;
     gap: 22px;
   }
+  .recommendation-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 13px; }
   .detail-title {
     font-size: 27px;
   }
@@ -113,6 +114,10 @@
   .search-form {
     gap: 7px;
   }
+  .search-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+  .search-field { grid-column: 1 / -1; }
+  .search-button,
+  .clear-all-button { min-height: 42px; }
   .search-field {
     height: 48px;
     padding: 0 12px;
@@ -167,6 +172,9 @@
     grid-template-columns: 1fr;
     gap: 21px;
   }
+  .recommendation-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 11px; }
+  .recommendation-info { padding: 8px; }
+  .detail-extras { gap: 28px; }
   .detail-poster {
     width: min(58%, 230px);
     max-height: 340px;

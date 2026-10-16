@@ -23,6 +23,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
   const runtimeSelect = document.getElementById("runtimeFilter");
   const advancedFilterHint = document.getElementById("advancedFilterHint");
   const clearFiltersButton = document.getElementById("clearAdvancedFilters");
+  const clearAllButton = document.getElementById("clearAllButton");
   const favoriteCount = document.getElementById("favoriteCount");
   const navLinks = [...document.querySelectorAll("[data-view]")];
   const typeTabs = [...document.querySelectorAll("[data-type]")];
@@ -289,6 +290,39 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
       languageSelect.value = "";
       runtimeSelect.value = "";
       refreshFilteredView();
+    });
+
+    // Полный сброс отдельно очищает запрос и все фильтры, затем показывает Trending.
+    clearAllButton.addEventListener("click", () => {
+      searchInput.value = "";
+      yearInput.value = "";
+      yearInput.setCustomValidity("");
+      genreSelect.value = "";
+      ratingSelect.value = "";
+      languageSelect.value = "";
+      runtimeSelect.value = "";
+      sortSelect.value = "relevance";
+
+      state.setFilters({
+        type: "",
+        year: "",
+        sort: "relevance",
+        genre: "",
+        rating: "",
+        language: "",
+        runtime: "",
+      });
+      catalogType = "";
+      activeView = "search";
+      typeTabs.forEach((tab) => {
+        const selected = tab.dataset.type === "";
+        tab.classList.toggle("is-selected", selected);
+        tab.setAttribute("aria-pressed", String(selected));
+      });
+      syncNavigation();
+      syncRuntimeFilterAvailability();
+      loadGenreOptions("");
+      loadCatalog("", 1);
     });
 
     sortSelect.addEventListener("change", () => {

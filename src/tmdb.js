@@ -113,9 +113,17 @@ export async function fetchTmdbDetails(key) {
   const [, mediaType, id] = key.split(":");
   if (!mediaType || !id) throw new Error("Invalid TMDB ID.");
   const isSeries = mediaType === "tv";
-  const data = await request(`/${mediaType}/${id}`, { language: "en-US", append_to_response: "credits" });
+  // Одним запросом загружаем данные страницы, видео и два источника рекомендаций.
+  const data = await request(`/${mediaType}/${id}`, {
+    language: "en-US",
+    append_to_response: "credits,videos,recommendations,similar",
+  });
   const directors = (data.credits?.crew || []).filter((person) => person.job === "Director").map((person) => person.name);
   const people = isSeries ? data.created_by || [] : directors;
+  const recommendations = data.recommendations?.results?.length
+    ? data.recommendations.results
+    : data.similar?.results || [];
+
   return {
     id: key,
     Type: isSeries ? "series" : "movie",
@@ -136,6 +144,15 @@ export async function fetchTmdbDetails(key) {
     Rating: data.vote_average ? data.vote_average.toFixed(1) : "N/A",
     Plot: data.overview || "N/A",
     Poster: data.poster_path ? `${IMAGE_ROOT}${data.poster_path}` : "N/A",
+    Videos: (data.videos?.results || [])
+      .filter((video) => video.site === "YouTube" && video.key && ["Trailer", "Teaser", "Featurette", "Clip"].includes(video.type))
+      .sort((a, b) => Number(b.type === "Trailer") - Number(a.type === "Trailer") || Number(b.official) - Number(a.official))
+      .slice(0, 5)
+      .map((video) => ({ id: video.id, key: video.key, name: video.name, type: video.type })),
+    Recommendations: recommendations
+      .filter((item) => item.id !== data.id && isReleased(item))
+      .slice(0, 10)
+      .map((item) => normalizeItem(item, mediaType)),
   };
 }
 

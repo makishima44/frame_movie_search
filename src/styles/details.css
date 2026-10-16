@@ -72,6 +72,93 @@
   font-size: 14px;
   line-height: 1.75;
 }
+.detail-extras {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 34px;
+  padding-top: 8px;
+}
+.detail-media-section { min-width: 0; }
+.detail-section-heading {
+  margin: 0 0 15px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.trailer-frame {
+  display: block;
+  width: min(100%, 820px);
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #08090b;
+}
+.video-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.video-link {
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--secondary-text);
+  font-size: 11px;
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+.video-link:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+}
+.recommendation-card {
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.recommendation-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px #00000020;
+}
+.recommendation-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.recommendation-poster {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 2.85;
+  object-fit: cover;
+  background: var(--poster-bg);
+}
+.recommendation-info {
+  display: grid;
+  gap: 5px;
+  padding: 10px;
+}
+.recommendation-info strong,
+.recommendation-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recommendation-info strong { font-size: 11px; font-weight: 600; }
+.recommendation-info span { color: var(--muted); font-size: 10px; }
 .detail-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -133,7 +133,7 @@ export function renderPagination({ page, totalResults, pageSize = 10, onPage }) 
 }
 
 /** Собирает экран подробностей: постер, описание, факты и кнопку избранного. */
-export function renderDetails(movie, { onBack, backLabel = "← Back to results", onFavorite, isFavorite, onActor }) {
+export function renderDetails(movie, { onBack, backLabel = "← Back to results", onFavorite, isFavorite, onActor, onTitle }) {
   clearResults();
   setHeading(movie.Type === "series" ? "About this show" : "About this movie", "DETAILS");
   const detail = element("article", "detail-view");
@@ -189,7 +189,63 @@ export function renderDetails(movie, { onBack, backLabel = "← Back to results"
   favorite.addEventListener("click", () => onFavorite(movie));
   copy.append(favorite);
   detail.append(poster, copy);
+
+  // Видео и рекомендации занимают всю ширину страницы под основными сведениями.
+  if (movie.Videos?.length || movie.Recommendations?.length) {
+    const extras = element("div", "detail-extras");
+    if (movie.Videos?.length) extras.append(createVideosSection(movie.Videos));
+    if (movie.Recommendations?.length) extras.append(createRecommendationsSection(movie.Recommendations, onTitle));
+    detail.append(extras);
+  }
   movieContainer.append(detail);
+}
+
+/** Встраивает главный трейлер и оставляет ссылки на другие доступные видео. */
+function createVideosSection(videos) {
+  const section = element("section", "detail-media-section videos-section");
+  section.append(element("h3", "detail-section-heading", "Trailers & videos"));
+  const primary = videos[0];
+  const frame = element("iframe", "trailer-frame");
+  frame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(primary.key)}`;
+  frame.title = primary.name || `${primary.type} for this title`;
+  frame.loading = "lazy";
+  frame.referrerPolicy = "strict-origin-when-cross-origin";
+  frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+  frame.allowFullscreen = true;
+  section.append(frame);
+
+  if (videos.length > 1) {
+    const links = element("div", "video-links");
+    videos.slice(1).forEach((video) => {
+      const link = element("a", "video-link", `${video.type}: ${video.name}`);
+      link.href = `https://www.youtube.com/watch?v=${encodeURIComponent(video.key)}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      links.append(link);
+    });
+    section.append(links);
+  }
+  return section;
+}
+
+/** Создаёт компактную ленту рекомендаций, ведущую на страницы выбранных названий. */
+function createRecommendationsSection(titles, onTitle) {
+  const section = element("section", "detail-media-section recommendations-section");
+  section.append(element("h3", "detail-section-heading", "You may also like"));
+  const grid = element("div", "recommendation-grid");
+  titles.forEach((title) => {
+    const card = element("button", "recommendation-card");
+    card.type = "button";
+    card.addEventListener("click", () => onTitle(title));
+    card.append(createPoster(title, "recommendation-poster"));
+    const info = element("span", "recommendation-info");
+    const typeLabel = title.Type === "series" ? "TV Show" : "Movie";
+    info.append(element("strong", "", title.Title), element("span", "", `${title.Year} · ${typeLabel}`));
+    card.append(info);
+    grid.append(card);
+  });
+  section.append(grid);
+  return section;
 }
 
 /** Показывает биографию человека и сетку популярных фильмов и сериалов с его участием. */
