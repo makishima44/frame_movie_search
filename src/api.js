@@ -1,31 +1,26 @@
 import { API_KEY } from "./config.js";
+import { fetchTmdbDetails } from "./tmdb.js";
 
-export async function searchMovieByTitle(title, page ) {
+const API_URL = "https://www.omdbapi.com/";
+
+/** Requests OMDb and converts its application-level errors into useful errors. */
+async function request(params) {
+  const url = new URL(API_URL);
+  url.search = new URLSearchParams({ apikey: API_KEY, ...params });
+  let response;
   try {
-    const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${title}&page=${page}`);
-
-    if (!response.ok) {
-      throw new Error("Ошибка сети");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error(`Произошла ошибка при запросе: ${error.message}`);
+    response = await fetch(url);
+  } catch {
+    throw new Error("Could not connect to OMDb. Check your internet connection and try again.");
   }
+  if (!response.ok) throw new Error(`OMDb returned an error (${response.status}). Try again later.`);
+  const data = await response.json();
+  if (data.Response === "False") throw new Error(data.Error || "No title found.");
+  return data;
 }
 
-export async function fetchMovieDetails(id) {
-  try {
-    const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}`);
-
-    if (!response.ok) {
-      throw new Error("Ошибка сети");
-    }
-
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error(`Произошла ошибка при запросе:, ${error.message}`);
-  }
+/** Fetch old saved OMDb favorites; all current browsing uses TMDB for localization consistency. */
+export function fetchMovieDetails(id) {
+  if (id.startsWith("tmdb:")) return fetchTmdbDetails(id);
+  return request({ i: id, plot: "full" });
 }

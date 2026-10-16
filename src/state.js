@@ -1,89 +1,49 @@
-let currentMovies = [];
-let currentPage = 1;
-let currentQuery = "";
+const KEYS = { query: "movieSearch.query", page: "movieSearch.page", favorites: "movieSearch.favorites", filters: "movieSearch.filters" };
+const safeRead = (key, fallback) => {
+  try { const value = localStorage.getItem(key); return value === null ? fallback : JSON.parse(value); }
+  catch { return fallback; }
+};
+const safeWrite = (key, value) => { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* Storage can be disabled or full. */ } };
+
+let movies = [];
+let query = "";
+let page = 1;
 let totalResults = 0;
-let currentSort = "none";
-let favoriteMovies = [];
-//---------------------------------------------------------------------//
+let filters = safeRead(KEYS.filters, { type: "", year: "", sort: "relevance" });
+if (!filters || typeof filters !== "object") filters = { type: "", year: "", sort: "relevance" };
+if (!["", "movie", "series"].includes(filters.type)) filters.type = "";
+let favorites = safeRead(KEYS.favorites, []);
+if (!Array.isArray(favorites)) favorites = [];
 
-export function setMovies(movies) {
-  currentMovies = movies;
-}
-
-export function getMovies() {
-  return currentMovies;
-}
-
-export function setMoviesPage(page) {
-  currentPage = page;
-}
-
-export function getMoviesPage() {
-  return currentPage;
-}
-
-export function setMoviesQuery(query) {
-  currentQuery = query;
-}
-
-export function getMoviesQuery() {
-  return currentQuery;
-}
-export function setTotalResults(total) {
-  totalResults = total;
-}
-
-export function getTotalResults() {
-  return totalResults;
-}
-
-export function setSort(sortType) {
-  currentSort = sortType;
-}
-
-export function getSort() {
-  return currentSort;
-}
-
-export function setFavoriteMovies(movies) {
-  favoriteMovies = movies;
-}
-
-export function getFavoriteMovies() {
-  return favoriteMovies;
-}
-
-//---------------------------------------------------------------------//
-export function setQueryToStorage(query) {
-  localStorage.setItem("lastMovieQuery", query);
-}
-
-export function loadQueryFromStorage() {
-  return localStorage.getItem("lastMovieQuery");
-}
-
-export function savePageToStorage(page) {
-  localStorage.setItem("lastMoviePage", page);
-}
-
-export function loadPageFromStorage() {
-  return Number(localStorage.getItem("lastMoviePage"));
-}
-
-export function isFavorite(movieId) {
-  const favoriteMovies = getFavoriteMovies();
-  return favoriteMovies.some((movie) => movie.imdbID === movieId);
-}
-
+export const getMovies = () => movies;
+export const setMovies = (value) => { movies = value; };
+export const getQuery = () => query;
+export const setQuery = (value) => { query = value; safeWrite(KEYS.query, value); };
+export const getPage = () => page;
+export const setPage = (value) => { page = value; safeWrite(KEYS.page, value); };
+export const getTotalResults = () => totalResults;
+export const setTotalResults = (value) => { totalResults = Number(value) || 0; };
+export const getFilters = () => filters;
+export const setFilters = (value) => { filters = { ...filters, ...value }; safeWrite(KEYS.filters, filters); };
+export const getFavorites = () => favorites;
+export const isFavorite = (id) => favorites.some((movie) => movie.imdbID === id);
 export function toggleFavorite(movie) {
-  const favoriteMovies = getFavoriteMovies();
-
-  if (!isFavorite(movie.imdbID)) {
-    setFavoriteMovies([...favoriteMovies, movie]);
-  } else {
-    const updatedFavorites = favoriteMovies.filter((favoriteMovie) => {
-      favoriteMovie.imdbID !== movie.imdbID;
-    });
-    setFavoriteMovies(updatedFavorites);
-  }
+  favorites = isFavorite(movie.imdbID) ? favorites.filter((item) => item.imdbID !== movie.imdbID) : [...favorites, movie];
+  safeWrite(KEYS.favorites, favorites);
+  return favorites;
+}
+export function restoreSearch() {
+  const savedQuery = safeRead(KEYS.query, null);
+  const savedPage = safeRead(KEYS.page, null);
+  // Migrate the plain-string keys used by the first version of the app.
+  let legacyQuery = "";
+  let legacyPage = 1;
+  try {
+    legacyQuery = localStorage.getItem("lastMovieQuery") || "";
+    legacyPage = Number(localStorage.getItem("lastMoviePage")) || 1;
+  } catch { /* The app remains usable when browser storage is unavailable. */ }
+  return {
+    query: typeof savedQuery === "string" ? savedQuery : legacyQuery,
+    page: Number(savedPage) || legacyPage,
+  };
 }
