@@ -133,7 +133,7 @@ export function renderPagination({ page, totalResults, pageSize = 10, onPage }) 
 }
 
 /** Собирает экран подробностей: постер, описание, факты и кнопку избранного. */
-export function renderDetails(movie, { onBack, backLabel = "← Back to results", onFavorite, isFavorite, onActor, onTitle }) {
+export function renderDetails(movie, { onBack, backLabel = "← Back to results", onFavorite, isFavorite, onActor, onDirector, onTitle }) {
   clearResults();
   setHeading(movie.Type === "series" ? "About this show" : "About this movie", "DETAILS");
   const detail = element("article", "detail-view");
@@ -150,7 +150,7 @@ export function renderDetails(movie, { onBack, backLabel = "← Back to results"
   const facts = element("div", "detail-facts");
   [
     ["Genre", movie.Genre],
-    [movie.Type === "series" ? "Created by" : "Director", movie.Director],
+    ...(movie.Type === "series" ? [["Created by", movie.Director]] : []),
     ...(!movie.Cast?.length ? [["Cast", movie.Actors]] : []),
     ["Country", movie.Country],
     ["Language", movie.Language],
@@ -161,6 +161,25 @@ export function renderDetails(movie, { onBack, backLabel = "← Back to results"
     fact.append(element("span", "", label), element("strong", "", value));
     facts.append(fact);
   });
+  if (movie.Type !== "series" || movie.Directors?.length) {
+    const fact = element("div", "detail-fact");
+    fact.append(element("span", "", movie.Type === "series" ? "Directed by" : "Director"));
+    const people = element("div", "detail-people");
+    if (movie.Directors?.length) {
+      movie.Directors.forEach((director) => {
+        const link = element("button", "person-name-link", director.name);
+        link.type = "button";
+        link.setAttribute("aria-label", `View director profile: ${director.name}`);
+        link.title = "Open director profile";
+        link.addEventListener("click", () => onDirector(director.id));
+        people.append(link);
+      });
+    } else {
+      people.append(element("strong", "", movie.Director || "N/A"));
+    }
+    fact.append(people);
+    facts.append(fact);
+  }
   copy.append(facts);
   if (movie.Cast?.length) {
     const castSection = element("section", "cast-section");
@@ -248,11 +267,12 @@ function createRecommendationsSection(titles, onTitle) {
   return section;
 }
 
-/** Показывает биографию человека и сетку популярных фильмов и сериалов с его участием. */
-export function renderPersonDetails(person, { onBack, onTitle }) {
+/** Показывает биографию человека и фильмографию в выбранной роли. */
+export function renderPersonDetails(person, { onBack, onTitle, role = "actor" }) {
   clearResults();
-  setHeading("Actor profile", "PEOPLE");
-  setMeta(`${person.knownFor.length} known titles`);
+  const titles = (role === "director" ? person.directedWork : person.knownFor) || [];
+  setHeading(role === "director" ? "Director profile" : "Actor profile", "PEOPLE");
+  setMeta(`${titles.length} ${titles.length === 1 ? "title" : "titles"}`);
   const profile = element("article", "person-view");
   const back = element("button", "back-button person-back-button", "← Back to title");
   back.type = "button";
@@ -267,24 +287,29 @@ export function renderPersonDetails(person, { onBack, onTitle }) {
   } else header.append(element("div", "person-profile-image person-profile-placeholder", person.name.charAt(0)));
 
   const intro = element("div", "person-profile-intro");
-  intro.append(element("p", "person-department", person.department), element("h2", "person-name", person.name));
+  intro.append(element("p", "person-department", role === "director" ? "Director" : person.department), element("h2", "person-name", person.name));
   const facts = [person.birthday, person.placeOfBirth].filter(Boolean);
   if (facts.length) intro.append(element("p", "person-facts", facts.join(" · ")));
   intro.append(element("p", "person-biography", person.biography));
   header.append(intro);
-  profile.append(back, header, element("h3", "filmography-heading", "Known for"));
+  profile.append(back, header, element("h3", "filmography-heading", role === "director" ? "Directed films & shows" : "Known for"));
 
-  const filmography = element("div", "person-filmography");
-  person.knownFor.forEach((title) => {
-    const item = element("button", "person-title-card");
-    item.type = "button";
-    item.addEventListener("click", () => onTitle(title));
-    item.append(createPoster(title, "person-title-poster"));
-    const titleInfo = element("span", "person-title-info");
-    titleInfo.append(element("strong", "", title.Title), element("span", "", `${title.Year} · ${title.Type === "series" ? "TV Show" : "Movie"}`));
-    item.append(titleInfo);
-    filmography.append(item);
-  });
-  profile.append(filmography);
+  if (!titles.length) {
+    const message = role === "director" ? "TMDB has no directing credits for this person yet." : "No filmography is available yet.";
+    profile.append(element("p", "person-filmography-empty", message));
+  } else {
+    const filmography = element("div", "person-filmography");
+    titles.forEach((title) => {
+      const item = element("button", "person-title-card");
+      item.type = "button";
+      item.addEventListener("click", () => onTitle(title));
+      item.append(createPoster(title, "person-title-poster"));
+      const titleInfo = element("span", "person-title-info");
+      titleInfo.append(element("strong", "", title.Title), element("span", "", `${title.Year} · ${title.Type === "series" ? "TV Show" : "Movie"}`));
+      item.append(titleInfo);
+      filmography.append(item);
+    });
+    profile.append(filmography);
+  }
   movieContainer.append(profile);
 }

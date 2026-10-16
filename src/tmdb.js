@@ -118,8 +118,10 @@ export async function fetchTmdbDetails(key) {
     language: "en-US",
     append_to_response: "credits,videos,recommendations,similar",
   });
-  const directors = (data.credits?.crew || []).filter((person) => person.job === "Director").map((person) => person.name);
-  const people = isSeries ? data.created_by || [] : directors;
+  const directorCredits = [...new Map((data.credits?.crew || [])
+    .filter((person) => person.job === "Director")
+    .map((person) => [person.id, { id: person.id, name: person.name }])).values()];
+  const people = isSeries ? data.created_by || [] : directorCredits;
   const recommendations = data.recommendations?.results?.length
     ? data.recommendations.results
     : data.similar?.results || [];
@@ -133,6 +135,7 @@ export async function fetchTmdbDetails(key) {
     Runtime: isSeries ? `${(data.episode_run_time || [])[0] || "—"} min/episode` : data.runtime ? `${data.runtime} min` : "N/A",
     Genre: (data.genres || []).map((genre) => genre.name).join(", ") || "N/A",
     Director: people.map((person) => person.name).join(", ") || "N/A",
+    Directors: directorCredits,
     Cast: (data.credits?.cast || []).slice(0, 12).map((person) => ({
       id: person.id,
       name: person.name,
@@ -167,6 +170,14 @@ export async function fetchPersonDetails(id) {
     .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
     .slice(0, 12)
     .map((item) => ({ ...normalizeItem(item, item.media_type), Popularity: item.popularity || 0 }));
+  const directedWork = [...new Map((credits.crew || [])
+    .filter((item) => item.job === "Director" && isReleased(item))
+    .map((item) => [
+      `${item.media_type}:${item.id}`,
+      { ...normalizeItem(item, item.media_type), Popularity: item.popularity || 0 },
+    ])).values()]
+    .sort((a, b) => b.Popularity - a.Popularity)
+    .slice(0, 30);
   return {
     id: person.id,
     name: person.name,
@@ -176,5 +187,6 @@ export async function fetchPersonDetails(id) {
     placeOfBirth: person.place_of_birth || "",
     profile: person.profile_path ? `${IMAGE_ROOT}${person.profile_path}` : "",
     knownFor,
+    directedWork,
   };
 }

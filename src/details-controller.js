@@ -1,5 +1,13 @@
 import { fetchPersonDetails, fetchTmdbDetails, searchCatalog } from "./tmdb.js";
-import { addEmptyAction, clearResults, renderDetails, renderPersonDetails, renderLoadingSkeletons, setLoading, showEmpty } from "./ui.js";
+import {
+  addEmptyAction,
+  clearResults,
+  renderDetails,
+  renderLoadingSkeletons,
+  renderPersonDetails,
+  setLoading,
+  showEmpty,
+} from "./ui.js";
 
 /** Управляет страницами фильма и профиля актёра, включая кнопки истории браузера. */
 export function createDetailsController({ getBackLabel, renderCurrentResults, onFavorite, isFavorite, nextRequest, isCurrentRequest }) {
@@ -45,6 +53,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
         onFavorite,
         isFavorite,
         onActor: showPersonDetails,
+        onDirector: (personId) => showPersonDetails(personId, { role: "director" }),
         onTitle: (title) => showDetails(title),
       });
     } catch (error) {
@@ -58,7 +67,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
   }
 
   /** Открывает профиль участника актёрского состава вместе с его фильмографией. */
-  async function showPersonDetails(id, { pushHistory = true } = {}) {
+  async function showPersonDetails(id, { pushHistory = true, role = "actor" } = {}) {
     const requestId = nextRequest();
     currentPerson = null;
     currentDetails = null;
@@ -68,14 +77,15 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     try {
       currentPerson = await fetchPersonDetails(id);
       if (!isCurrentRequest(requestId)) return;
-      if (pushHistory) history.pushState({ ...(history.state || {}), view: "person-details", personId: id }, "", `#person=${encodeURIComponent(id)}`);
+      if (pushHistory) history.pushState({ ...(history.state || {}), view: "person-details", personId: id, personRole: role }, "", `#person=${encodeURIComponent(id)}`);
       renderPersonDetails(currentPerson, {
         onBack: handleBack,
         onTitle: (title) => showDetails(title),
+        role,
       });
     } catch (error) {
       if (isCurrentRequest(requestId)) {
-        showEmpty("Could not load actor profile", error.message, "!", true);
+        showEmpty("Could not load person profile", error.message, "!", true);
         addEmptyAction("← Back", handleBack);
       }
     } finally {
@@ -98,7 +108,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
   function handlePopState() {
     const previousView = history.state?.view;
     if (previousView === "movie-details") showDetails(history.state.movieId, { pushHistory: false });
-    else if (previousView === "person-details") showPersonDetails(history.state.personId, { pushHistory: false });
+    else if (previousView === "person-details") showPersonDetails(history.state.personId, { pushHistory: false, role: history.state.personRole || "actor" });
     else {
       reset();
       renderCurrentResults();
@@ -125,6 +135,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
       onFavorite,
       isFavorite,
       onActor: showPersonDetails,
+      onDirector: (personId) => showPersonDetails(personId, { role: "director" }),
       onTitle: (title) => showDetails(title),
     });
   }
