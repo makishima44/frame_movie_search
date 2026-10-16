@@ -1,5 +1,5 @@
 import { fetchPersonDetails, fetchTmdbDetails, searchCatalog } from "./tmdb.js";
-import { addEmptyAction, clearResults, renderDetails, renderPersonDetails, setLoading, showEmpty } from "./ui.js";
+import { addEmptyAction, clearResults, renderDetails, renderPersonDetails, renderLoadingSkeletons, setLoading, showEmpty } from "./ui.js";
 
 /** Управляет страницами фильма и профиля актёра, включая кнопки истории браузера. */
 export function createDetailsController({ getBackLabel, renderCurrentResults, onFavorite, isFavorite, nextRequest, isCurrentRequest }) {
@@ -29,6 +29,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     currentPerson = null;
     setLoading(true);
     clearResults();
+    renderLoadingSkeletons(1);
     try {
       const selectedTitle = typeof selection === "object" ? selection : null;
       let id = selectedTitle?.id || selection;
@@ -62,6 +63,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     currentDetails = null;
     setLoading(true);
     clearResults();
+    renderLoadingSkeletons(1);
     try {
       currentPerson = await fetchPersonDetails(id);
       if (!isCurrentRequest(requestId)) return;

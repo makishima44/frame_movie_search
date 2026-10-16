@@ -4,6 +4,7 @@ import {
   clearResults,
   renderMovies,
   renderPagination,
+  renderLoadingSkeletons,
   setHeading,
   setLoading,
   setMeta,
@@ -89,6 +90,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
     state.setQuery("");
     setLoading(true);
     clearResults();
+    renderLoadingSkeletons();
     try {
       const data = await discoverCatalog({ ...state.getFilters(), type, page });
       if (!isCurrentRequest(requestId)) return;
@@ -129,6 +131,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
     catalogMode = false;
     setLoading(true);
     clearResults();
+    renderLoadingSkeletons();
     try {
       const data = await searchCatalog({ title: normalizedTitle, page, ...filters });
       if (!isCurrentRequest(requestId)) return;

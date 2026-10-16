@@ -27,6 +27,21 @@ export function clearResults() {
   paginationContainer.replaceChildren();
   resultsMeta.textContent = "";
 }
+
+/** Показывает нейтральные карточки-заглушки, пока TMDB загружает результаты. */
+export function renderLoadingSkeletons(count = 10) {
+  const fragment = document.createDocumentFragment();
+  for (let index = 0; index < count; index += 1) {
+    const card = element("div", "skeleton-card");
+    card.setAttribute("aria-hidden", "true");
+    card.append(element("div", "skeleton-poster"));
+    const info = element("div", "skeleton-info");
+    info.append(element("span", "skeleton-line skeleton-title"), element("span", "skeleton-line skeleton-meta"));
+    card.append(info);
+    fragment.append(card);
+  }
+  movieContainer.append(fragment);
+}
 /** Обновляет заголовок секции и подпись над ним. */
 export function setHeading(title, eyebrow = "SEARCH RESULTS") {
   resultsTitle.textContent = title;

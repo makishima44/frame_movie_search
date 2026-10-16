@@ -20,6 +20,9 @@
   --favorite-bg: #101114c9;
   --favorite-line: #ffffff30;
   --favorite-text: #fff;
+  --skeleton-base: #202127;
+  --skeleton-highlight: #303138;
+  --skeleton-edge: #2b2c32;
   --secondary-text: #c8c7cc;
   --radius: 14px;
   font-family: "DM Sans", sans-serif;
@@ -46,5 +49,8 @@
   --favorite-bg: #242720bf;
   --favorite-line: #ffffff70;
   --favorite-text: #fff;
+  --skeleton-base: #e5e7e0;
+  --skeleton-highlight: #f1f2ee;
+  --skeleton-edge: #dfe2d8;
   --secondary-text: #53584d;
 }
