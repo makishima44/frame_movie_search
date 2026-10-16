@@ -91,3 +91,188 @@
   font-weight: 500;
   line-height: 1.5;
 }
+.cast-section {
+  margin-top: 26px;
+}
+.cast-heading,
+.filmography-heading {
+  margin: 0 0 13px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.cast-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.cast-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.cast-card:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.cast-portrait {
+  width: 38px;
+  height: 44px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 7px;
+  background: var(--surface-2);
+}
+.cast-portrait-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 16px;
+}
+.cast-person-info,
+.person-title-info {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.cast-person-name,
+.cast-character,
+.person-title-info strong,
+.person-title-info span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cast-person-name {
+  font-size: 11px;
+  font-weight: 600;
+}
+.cast-character,
+.person-title-info span {
+  color: var(--muted);
+  font-size: 10px;
+}
+.person-view {
+  grid-column: 1/-1;
+}
+.person-back-button {
+  margin: 0 0 22px;
+}
+.person-profile-header {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  align-items: start;
+  gap: 30px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.person-profile-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  border-radius: 11px;
+  background: var(--surface-2);
+}
+.person-profile-placeholder {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 64px;
+}
+.person-profile-intro {
+  align-self: center;
+}
+.person-department {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.person-name {
+  margin: 0 0 8px;
+  font-size: clamp(26px, 4vw, 38px);
+  letter-spacing: -1.2px;
+}
+.person-facts {
+  color: var(--muted);
+  font-size: 12px;
+}
+.person-biography {
+  max-width: 780px;
+  margin: 16px 0 0;
+  color: var(--secondary-text);
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+.filmography-heading {
+  margin-top: 34px;
+}
+.person-filmography {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.person-title-card {
+  min-width: 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.person-title-card:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.person-title-poster {
+  width: 42px;
+  height: 58px;
+  flex: none;
+  border-radius: 5px;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+.person-title-info strong {
+  font-size: 10px;
+  line-height: 1.4;
+}
+@media (max-width: 800px) {
+  .person-filmography {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .cast-grid {
+    grid-template-columns: 1fr;
+  }
+  .person-profile-header {
+    grid-template-columns: 105px minmax(0, 1fr);
+    gap: 15px;
+    padding: 14px;
+  }
+  .person-name {
+    font-size: 23px;
+  }
+  .person-filmography {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

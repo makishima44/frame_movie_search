@@ -6,6 +6,9 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 24px 16px;
   }
+  .advanced-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (max-width: 700px) {
   .app-shell {
@@ -42,6 +45,13 @@
   .filter-controls {
     width: 100%;
     justify-content: space-between;
+  }
+  .advanced-filters summary {
+    flex-wrap: wrap;
+  }
+  .advanced-summary-note {
+    flex-basis: 100%;
+    margin-left: 26px;
   }
   .results-section {
     padding: 39px 0 34px;
@@ -116,6 +126,13 @@
   }
   .filter-controls {
     gap: 8px;
+  }
+  .advanced-filter-grid {
+    gap: 10px;
+  }
+  .advanced-field select {
+    padding: 0 6px;
+    font-size: 11px;
   }
   .filter-label {
     gap: 6px;

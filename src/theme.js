@@ -2,6 +2,7 @@ const STORAGE_KEY = "movieSearch.theme";
 const themeToggle = document.getElementById("themeToggle");
 const themeColor = document.querySelector('meta[name="theme-color"]');
 
+/** Применяет палитру и обновляет подпись кнопки и цвет панели браузера. */
 function applyTheme(theme) {
   const selectedTheme = theme === "light" ? "light" : "dark";
   document.documentElement.dataset.theme = selectedTheme;
@@ -11,6 +12,7 @@ function applyTheme(theme) {
   themeColor.content = selectedTheme === "dark" ? "#101114" : "#f5f6f2";
 }
 
+/** Загружает сохранённую тему и включает переключение светлого/тёмного оформления. */
 export function initializeTheme() {
   const savedTheme = (() => {
     try {
