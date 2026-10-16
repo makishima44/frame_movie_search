@@ -41,4 +41,5 @@ catalogController = createCatalogController({
 
 initializeTheme();
 detailsController.initialize();
-catalogController.initialize();
+const hasRestoredDetails = detailsController.restoreFromLocation();
+catalogController.initialize({ loadInitialCatalog: !hasRestoredDetails });

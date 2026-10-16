@@ -5,6 +5,7 @@ import {
   renderDetails,
   renderLoadingSkeletons,
   renderPersonDetails,
+  scrollToViewStart,
   setLoading,
   showEmpty,
 } from "./ui.js";
@@ -38,6 +39,7 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     setLoading(true);
     clearResults();
     renderLoadingSkeletons(1);
+    scrollToViewStart();
     try {
       const selectedTitle = typeof selection === "object" ? selection : null;
       let id = selectedTitle?.id || selection;
@@ -74,10 +76,15 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     setLoading(true);
     clearResults();
     renderLoadingSkeletons(1);
+    scrollToViewStart();
     try {
       currentPerson = await fetchPersonDetails(id);
       if (!isCurrentRequest(requestId)) return;
-      if (pushHistory) history.pushState({ ...(history.state || {}), view: "person-details", personId: id, personRole: role }, "", `#person=${encodeURIComponent(id)}`);
+      if (pushHistory) history.pushState(
+        { ...(history.state || {}), view: "person-details", personId: id, personRole: role },
+        "",
+        `#person=${encodeURIComponent(id)}&role=${encodeURIComponent(role)}`,
+      );
       renderPersonDetails(currentPerson, {
         onBack: handleBack,
         onTitle: (title) => showDetails(title),
@@ -148,5 +155,35 @@ export function createDetailsController({ getBackLabel, renderCurrentResults, on
     });
   }
 
-  return { initialize, showDetails, reset, isShowing, refreshCurrentDetails };
+  /** Восстанавливает подробную страницу из hash-ссылки после открытия или перезагрузки. */
+  function restoreFromLocation() {
+    const route = new URLSearchParams(window.location.hash.slice(1));
+    const movieId = route.get("film");
+    const personId = route.get("person");
+    if (!movieId && !personId) return false;
+
+    const role = route.get("role") === "director" || history.state?.personRole === "director"
+      ? "director"
+      : "actor";
+    const routeState = movieId
+      ? { view: "movie-details", movieId }
+      : { view: "person-details", personId, personRole: role };
+    const expectedView = routeState.view;
+
+    // При прямом открытии hash-ссылки добавляем каталог под ней, чтобы кнопка «назад» осталась внутри приложения.
+    if (history.state?.view !== expectedView) {
+      const detailUrl = window.location.href;
+      const baseUrl = `${window.location.pathname}${window.location.search}`;
+      history.replaceState({ view: "catalog" }, "", baseUrl);
+      history.pushState(routeState, "", detailUrl);
+    } else {
+      history.replaceState({ ...history.state, ...routeState }, "", window.location.href);
+    }
+
+    if (movieId) showDetails(movieId, { pushHistory: false });
+    else showPersonDetails(personId, { pushHistory: false, role });
+    return true;
+  }
+
+  return { initialize, restoreFromLocation, showDetails, reset, isShowing, refreshCurrentDetails };
 }

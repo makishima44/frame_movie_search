@@ -32,6 +32,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
   let catalogMode = true;
   let catalogType = "";
   let genreRequestNumber = 0;
+  let hasLoadedResults = false;
 
   /** Сортирует загруженную страницу по выбранному правилу. */
   function sortTitles(titles) {
@@ -98,12 +99,14 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
       state.setMovies(data.results);
       state.setPage(data.page);
       state.setTotalResults(data.totalResults);
+      hasLoadedResults = true;
       activeView = "search";
       syncNavigation();
       renderCatalogResults();
     } catch (error) {
       if (!isCurrentRequest(requestId)) return;
       state.setMovies([]);
+      hasLoadedResults = true;
       setHeading(type === "series" ? "TV Shows" : type === "movie" ? "Movies" : "Trending today", "TMDB CATALOG");
       showEmpty("Could not load the catalog", error.message, "!", true);
     } finally {
@@ -114,6 +117,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
   /** Перерисовывает текущую вкладку после закрытия карточки или изменения избранного. */
   function renderCurrentResults() {
     if (activeView === "favorites") renderFavorites();
+    else if (!hasLoadedResults) loadCatalog(catalogType, 1);
     else if (catalogMode) renderCatalogResults();
     else renderSearchResults();
   }
@@ -140,6 +144,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
       state.setQuery(normalizedTitle);
       state.setPage(page);
       state.setTotalResults(data.totalResults);
+      hasLoadedResults = true;
       activeView = "search";
       syncNavigation();
       renderSearchResults();
@@ -147,6 +152,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
       if (!isCurrentRequest(requestId)) return;
       state.setQuery(normalizedTitle);
       state.setMovies([]);
+      hasLoadedResults = true;
       setHeading("Search failed", "SEARCH RESULTS");
       showEmpty("Check your search", error.message, "⌕", true);
     } finally {
@@ -340,7 +346,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
   }
 
   /** Восстанавливает фильтры и запускает стартовую загрузку каталога. */
-  function initialize() {
+  function initialize({ loadInitialCatalog = true } = {}) {
     const filters = state.getFilters();
     const currentYear = new Date().getFullYear();
     yearInput.max = String(currentYear);
@@ -360,7 +366,7 @@ export function createCatalogController({ onDetails, onFavorite, resetDetails, n
     syncRuntimeFilterAvailability();
     bindEvents();
     loadGenreOptions(catalogType);
-    loadCatalog(catalogType);
+    if (loadInitialCatalog) loadCatalog(catalogType);
     refreshFavoriteCount();
   }
 

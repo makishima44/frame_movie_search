@@ -8,6 +8,7 @@
 }
 .detail-poster {
   width: 100%;
+  aspect-ratio: 2 / 2.85;
   max-height: 480px;
   object-fit: cover;
   border-radius: 12px;

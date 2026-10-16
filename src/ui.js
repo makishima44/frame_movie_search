@@ -28,6 +28,16 @@ export function clearResults() {
   resultsMeta.textContent = "";
 }
 
+/** Переводит пользователя к началу экрана подробностей после смены контента. */
+export function scrollToViewStart() {
+  const resultsSection = document.querySelector(".results-section");
+  if (!resultsSection) return;
+
+  requestAnimationFrame(() => {
+    resultsSection.scrollIntoView({ block: "start", behavior: "instant" });
+  });
+}
+
 /** Показывает нейтральные карточки-заглушки, пока TMDB загружает результаты. */
 export function renderLoadingSkeletons(count = 10) {
   const fragment = document.createDocumentFragment();
@@ -217,6 +227,7 @@ export function renderDetails(movie, { onBack, backLabel = "← Back to results"
     detail.append(extras);
   }
   movieContainer.append(detail);
+  scrollToViewStart();
 }
 
 /** Встраивает главный трейлер и оставляет ссылки на другие доступные видео. */
@@ -312,4 +323,5 @@ export function renderPersonDetails(person, { onBack, onTitle, role = "actor" })
     profile.append(filmography);
   }
   movieContainer.append(profile);
+  scrollToViewStart();
 }
