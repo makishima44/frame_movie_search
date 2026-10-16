@@ -1,176 +1,146 @@
 const movieContainer = document.getElementById("movieContainer");
 const paginationContainer = document.getElementById("paginationContainer");
 const loadingContainer = document.getElementById("loadingContainer");
-const movieSearchButton = document.getElementById("movieSearchButton");
+const resultsTitle = document.getElementById("resultsTitle");
+const resultsEyebrow = document.getElementById("resultsEyebrow");
+const resultsMeta = document.getElementById("resultsMeta");
 
-export function showMessage(message) {
-  clearMovieList();
+const element = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
 
-  const errorMessage = document.createElement("p");
-  errorMessage.textContent = message;
-
-  movieContainer.append(errorMessage);
+export function setLoading(active) {
+  loadingContainer.hidden = !active;
+  const button = document.getElementById("movieSearchButton");
+  button.disabled = active;
+  button.innerHTML = active ? "Searching…" : 'Search <span aria-hidden="true">↗</span>';
 }
 
-export function renderMovies(movies, onDetailsClick, onFavoriteClick, isFavorite) {
+export function clearResults() {
+  movieContainer.replaceChildren();
+  paginationContainer.replaceChildren();
+  resultsMeta.textContent = "";
+}
+export function setHeading(title, eyebrow = "SEARCH RESULTS") {
+  resultsTitle.textContent = title;
+  resultsEyebrow.textContent = eyebrow;
+}
+export function setMeta(value) {
+  resultsMeta.textContent = value;
+}
+
+export function showEmpty(title, message, icon = "⌕", isError = false) {
+  clearResults();
+  const state = element("div", "empty-state");
+  state.append(element("div", "empty-icon", icon), element("h3", isError ? "error-text" : "", title), element("p", "", message));
+  movieContainer.append(state);
+  return state;
+}
+
+export function addEmptyAction(label, onClick) {
+  const state = movieContainer.querySelector(".empty-state");
+  if (!state) return;
+  const button = element("button", "page-button", label);
+  button.type = "button";
+  button.addEventListener("click", onClick);
+  state.append(button);
+}
+
+function createPoster(movie, className = "movie-poster") {
+  if (movie.Poster && movie.Poster !== "N/A") {
+    const image = element("img", className);
+    image.src = movie.Poster;
+    image.alt = `Poster: ${movie.Title}`;
+    image.loading = "lazy";
+    image.onerror = () => image.replaceWith(element("div", "poster-placeholder", movie.Title?.charAt(0) || "F"));
+    return image;
+  }
+  return element("div", "poster-placeholder", movie.Title?.charAt(0) || "F");
+}
+
+export function renderMovies(movies, { isFavorite, onFavorite, onDetails }) {
+  clearResults();
+  if (!movies.length) return showEmpty("No titles found", "Try a different search or adjust your filters.");
+  const fragment = document.createDocumentFragment();
   movies.forEach((movie) => {
-    const movieCard = document.createElement("div");
-    movieCard.classList.add("movie-card");
-
-    const buttonBlock = document.createElement("div");
-    buttonBlock.classList.add("button-block");
-
-    const movieTitle = document.createElement("h2");
-    movieTitle.textContent = movie.Title;
-
-    const movieYear = document.createElement("p");
-    movieYear.textContent = movie.Year;
-
-    const movieDetailsButton = document.createElement("button");
-    movieDetailsButton.classList.add("movie-details-button");
-    movieDetailsButton.classList.add("button");
-    movieDetailsButton.textContent = "Подробнее";
-    movieDetailsButton.addEventListener("click", () => {
-      onDetailsClick(movie.imdbID);
-    });
-
-    const favoriteButton = document.createElement("button");
-    favoriteButton.classList.add("favorite-button");
-    favoriteButton.classList.add("button");
-    if (isFavorite(movie.imdbID)) {
-      favoriteButton.textContent = "★";
-    } else {
-      favoriteButton.textContent = "☆";
-    }
-
-    favoriteButton.addEventListener("click", () => {
-      onFavoriteClick(movie);
-    });
-
-    if (movie.Poster === "N/A") {
-      const noPosterText = document.createElement("p");
-      noPosterText.textContent = "Постер отсутствует";
-      movieCard.append(noPosterText);
-    } else {
-      const moviePoster = document.createElement("img");
-      moviePoster.classList.add("movie-poster");
-      moviePoster.src = movie.Poster;
-      moviePoster.alt = `Постер фильма ${movie.Title}`;
-      movieCard.append(moviePoster);
-    }
-
-    buttonBlock.append(movieDetailsButton, favoriteButton);
-    movieCard.append(movieTitle, movieYear, buttonBlock);
-    movieContainer.append(movieCard);
+    const card = element("article", "movie-card");
+    const poster = element("div", "poster-wrap");
+    poster.append(createPoster(movie));
+    const favorite = element("button", `favorite-button${isFavorite(movie.imdbID) ? " is-favorite" : ""}`, isFavorite(movie.imdbID) ? "♥" : "♡");
+    favorite.type = "button";
+    favorite.setAttribute("aria-label", isFavorite(movie.imdbID) ? `Remove ${movie.Title} from watchlist` : `Add ${movie.Title} to watchlist`);
+    favorite.setAttribute("aria-pressed", String(isFavorite(movie.imdbID)));
+    favorite.addEventListener("click", () => onFavorite(movie));
+    poster.append(favorite);
+    const info = element("div", "card-info");
+    info.append(element("h3", "card-title", movie.Title));
+    const meta = element("div", "card-meta");
+    const mediaLabels = { movie: "Movie", series: "TV Show", tv: "TV Show" };
+    meta.append(element("span", "", movie.Year || "Year unknown"), element("span", "", "·"), element("span", "media-type", mediaLabels[movie.Type] || "Movie"));
+    if (movie.Rating) meta.append(element("span", "", `★ ${movie.Rating}`));
+    info.append(meta);
+    const detail = element("button", "details-button", "View details →");
+    detail.type = "button";
+    detail.addEventListener("click", () => onDetails(movie.imdbID));
+    info.append(detail);
+    card.append(poster, info);
+    fragment.append(card);
   });
+  movieContainer.append(fragment);
 }
 
-export function showMovieDetails(movie, onBackClick) {
-  const { Title, Year, Genre, Director, Poster, Plot, Country, imdbRating } = movie;
+export function renderPagination({ page, totalResults, pageSize = 10, onPage }) {
+  paginationContainer.replaceChildren();
+  const totalPages = Math.ceil(totalResults / pageSize);
+  if (totalPages < 2) return;
+  const previous = element("button", "page-button", "← Previous");
+  previous.type = "button";
+  previous.disabled = page <= 1;
+  previous.addEventListener("click", () => onPage(page - 1));
+  const next = element("button", "page-button", "Next →");
+  next.type = "button";
+  next.disabled = page >= totalPages;
+  next.addEventListener("click", () => onPage(page + 1));
+  paginationContainer.append(previous, element("span", "page-indicator", `Page ${page} of ${totalPages}`), next);
+}
 
-  clearMovieList();
-
-  const movieDetailsCard = document.createElement("div");
-  movieDetailsCard.classList.add("movie-details-card");
-
-  const movieTitle = document.createElement("h2");
-  movieTitle.textContent = `Название: ${Title}`;
-
-  const movieYear = document.createElement("p");
-  movieYear.textContent = `Год: ${Year}`;
-
-  const movieGenre = document.createElement("p");
-  movieGenre.textContent = `Жанр: ${Genre}`;
-
-  const movieDirector = document.createElement("p");
-  movieDirector.textContent = `Режиссёр: ${Director}`;
-
-  const movieCountry = document.createElement("p");
-  movieCountry.textContent = `Страна: ${Country}`;
-
-  const movieImdbRating = document.createElement("p");
-  movieImdbRating.textContent = `Рейтинг IMDB: ${imdbRating}`;
-
-  const moviePlot = document.createElement("p");
-  moviePlot.textContent = `Сюжет: ${Plot}`;
-
-  if (Poster === "N/A") {
-    const noPosterText = document.createElement("p");
-    noPosterText.textContent = "Постер отсутствует";
-    movieDetailsCard.append(noPosterText);
-  } else {
-    const moviePoster = document.createElement("img");
-    moviePoster.classList.add("movie-poster");
-    moviePoster.src = Poster;
-    moviePoster.alt = `Постер фильма ${Title}`;
-    movieDetailsCard.append(moviePoster);
-  }
-
-  const backButton = document.createElement("button");
-  backButton.textContent = "← Назад к результатам";
-  backButton.addEventListener("click", () => {
-    onBackClick();
+export function renderDetails(movie, { onBack, backLabel = "← Back to results", onFavorite, isFavorite }) {
+  clearResults();
+  setHeading(movie.Type === "series" ? "About this show" : "About this movie", "DETAILS");
+  const detail = element("article", "detail-view");
+  const poster = createPoster(movie, "detail-poster");
+  const copy = element("div", "detail-copy");
+  const back = element("button", "back-button", backLabel);
+  back.type = "button";
+  back.addEventListener("click", onBack);
+  copy.append(back, element("h2", "detail-title", movie.Title));
+  const subtitle = [movie.Year, movie.Rated, movie.Runtime].filter((item) => item && item !== "N/A").join(" · ");
+  copy.append(element("p", "detail-subtitle", subtitle));
+  const ratingSource = movie.imdbID?.startsWith("tmdb:") ? "TMDB" : "IMDb";
+  if (movie.imdbRating && movie.imdbRating !== "N/A") copy.append(element("div", "detail-rating", `★  ${movie.imdbRating} / 10 ${ratingSource}`));
+  copy.append(element("p", "detail-plot", movie.Plot && movie.Plot !== "N/A" ? movie.Plot : "No overview available yet."));
+  const facts = element("div", "detail-facts");
+  [
+    ["Genre", movie.Genre],
+    [movie.imdbID?.startsWith("tmdb:tv:") ? "Created by" : "Director", movie.Director],
+    ["Cast", movie.Actors],
+    ["Country", movie.Country],
+    ["Language", movie.Language],
+    ["Awards", movie.Awards],
+  ].forEach(([label, value]) => {
+    if (!value || value === "N/A") return;
+    const fact = element("div", "detail-fact");
+    fact.append(element("span", "", label), element("strong", "", value));
+    facts.append(fact);
   });
-
-  movieDetailsCard.append(movieTitle, movieYear, movieGenre, movieDirector, movieCountry, movieImdbRating, moviePlot, backButton);
-  movieContainer.append(movieDetailsCard);
-}
-
-export function renderPagination(nextPageCallback, nextPageAvailable, previousPageCallback, previousPageAvailable) {
-  paginationContainer.textContent = "";
-
-  if (previousPageAvailable) {
-    const previousButton = document.createElement("button");
-    previousButton.textContent = "Предыдущая";
-    previousButton.addEventListener("click", () => {
-      previousPageCallback();
-    });
-
-    paginationContainer.append(previousButton);
-  }
-
-  if (nextPageAvailable) {
-    const nextButton = document.createElement("button");
-    nextButton.textContent = "Следующая";
-    nextButton.addEventListener("click", () => {
-      nextPageCallback();
-    });
-    paginationContainer.append(nextButton);
-  }
-}
-
-export function clearMovieList() {
-  movieContainer.textContent = "";
-}
-
-export function showLoading() {
-  loadingContainer.textContent = "Загрузка...";
-}
-
-export function hideLoading() {
-  loadingContainer.textContent = "";
-}
-
-export function disableSearchButton() {
-  movieSearchButton.disabled = true;
-}
-
-export function enableSearchButton() {
-  movieSearchButton.disabled = false;
-}
-
-export function changeSearchButtonText(text) {
-  movieSearchButton.textContent = text;
-}
-
-export function startSearch() {
-  showLoading();
-  changeSearchButtonText("Ищу...");
-  disableSearchButton();
-}
-
-export function finishSearch() {
-  hideLoading();
-  changeSearchButtonText("Поиск");
-  enableSearchButton();
+  copy.append(facts);
+  const favorite = element("button", "detail-favorite-button", `${isFavorite(movie.imdbID) ? "♥ Saved to watchlist" : "♡ Add to watchlist"}`);
+  favorite.type = "button";
+  favorite.addEventListener("click", () => onFavorite(movie));
+  copy.append(favorite);
+  detail.append(poster, copy);
+  movieContainer.append(detail);
 }

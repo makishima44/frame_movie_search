@@ -1,0 +1,146 @@
+/* Search form and filter controls. */
+.search-panel {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.search-form {
+  display: flex;
+  gap: 10px;
+}
+.search-field {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1;
+  padding: 0 17px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--field-bg);
+}
+.search-field:focus-within {
+  border-color: var(--accent);
+}
+.search-field input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font:
+    400 14px "DM Sans",
+    sans-serif;
+}
+.search-field input::placeholder {
+  color: var(--muted);
+}
+.search-icon {
+  width: 15px;
+  height: 15px;
+  border: 1.7px solid var(--muted);
+  border-radius: 50%;
+  position: relative;
+  flex: none;
+}
+.search-icon:after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 1.5px;
+  background: var(--muted);
+  right: -4px;
+  bottom: -2px;
+  transform: rotate(48deg);
+}
+button,
+select,
+input {
+  font: inherit;
+}
+.search-button {
+  min-width: 128px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    filter 0.2s,
+    transform 0.2s;
+}
+.search-button:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+.search-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+.search-button span {
+  margin-left: 10px;
+}
+.filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+.type-tabs {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.type-tab {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.type-tab:hover {
+  color: var(--text);
+}
+.type-tab.is-selected {
+  background: var(--selected-bg);
+  color: var(--text);
+  border-color: var(--selected-line);
+}
+.filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.filter-label input,
+.filter-label select {
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--field-bg);
+  color: var(--text);
+  padding: 0 10px;
+  font-size: 11px;
+  outline: none;
+}
+.filter-label input {
+  width: 90px;
+}
+.filter-label select {
+  min-width: 150px;
+}

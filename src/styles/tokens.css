@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&display=swap");
+
+:root {
+  color-scheme: dark;
+  --bg: #101114;
+  --surface: #17181d;
+  --surface-2: #202127;
+  --line: #2b2c32;
+  --text: #f5f2ec;
+  --muted: #92919a;
+  --accent: #d8fa82;
+  --accent-ink: #171a10;
+  --danger: #f28c8c;
+  --field-bg: #111216;
+  --selected-bg: #2a2c30;
+  --selected-line: #383a40;
+  --poster-bg: linear-gradient(145deg, #26272d, #191a1f);
+  --poster-line: #2b2c32;
+  --poster-muted: #5d5e66;
+  --favorite-bg: #101114c9;
+  --favorite-line: #ffffff30;
+  --favorite-text: #fff;
+  --secondary-text: #c8c7cc;
+  --radius: 14px;
+  font-family: "DM Sans", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f5f6f2;
+  --surface: #ffffff;
+  --surface-2: #eceee8;
+  --line: #dfe2d8;
+  --text: #242720;
+  --muted: #72776b;
+  --accent: #607a2d;
+  --accent-ink: #ffffff;
+  --danger: #a63c3c;
+  --field-bg: #f9faf7;
+  --selected-bg: #e9eddf;
+  --selected-line: #d7dec9;
+  --poster-bg: linear-gradient(145deg, #e7e9e2, #d9dcd3);
+  --poster-line: #dfe2d8;
+  --poster-muted: #858b7e;
+  --favorite-bg: #242720bf;
+  --favorite-line: #ffffff70;
+  --favorite-text: #fff;
+  --secondary-text: #53584d;
+}
