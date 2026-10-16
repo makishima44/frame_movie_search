@@ -1,5 +1,6 @@
 
 node_modules/
+dist/
 src/config.js
 .env
 .DS_Store

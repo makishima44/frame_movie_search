@@ -20,7 +20,11 @@ A small app built with plain HTML, CSS, and JavaScript. No bundler or third-part
 
 ## TMDB API key
 
-The v3 API key is configured in `src/config.js`. TMDB requires an account and an API application request. The key is included in browser requests and is visible to site visitors. For a public deployment, proxy TMDB requests through a server.
+For local development, place the v3 key in the ignored `src/config.js` file. For Vercel, add it as the `TMDB_API_KEY` environment variable; the build script generates the config in the deployment output. The key is included in browser requests and is visible to site visitors. For a public deployment that needs to keep it private, proxy TMDB requests through a server.
+
+## Deploy to Vercel
+
+The Vercel build uses only Node.js built-in modules. Set `TMDB_API_KEY` in the project environment variables for Production, Preview, and Development as needed. Vercel runs `npm run build` and serves the generated `dist/` directory.
 
 ## Run locally
 

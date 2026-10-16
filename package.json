@@ -1,0 +1,12 @@
+{
+  "name": "movie-search-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A vanilla JavaScript movie and TV search app powered by TMDB.",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "build": "node scripts/build.js"
+  }
+}
